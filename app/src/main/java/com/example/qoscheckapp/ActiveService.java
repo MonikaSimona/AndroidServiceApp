@@ -79,7 +79,7 @@ public class ActiveService extends Service {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
             try {
                 ActiveServiceNotification notification = new ActiveServiceNotification();
-                startForeground(NOTIF_ID,notification.setNotification(this, "Service notification", "This is the service's notification", R.drawable.ic_launcher_background));
+                startForeground(NOTIF_ID,notification.setNotification(this, "Service notification", "This is the service's notification", R.drawable.ic_android));
                 Log.i("SERVICE","restartng foreground successful");
                 startTimer();
             }catch (Exception e){

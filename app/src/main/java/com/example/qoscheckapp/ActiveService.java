@@ -2,7 +2,9 @@ package com.example.qoscheckapp;
 
 import android.app.Notification;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
@@ -15,10 +17,11 @@ import java.util.TimerTask;
 public class ActiveService extends Service {
 
     protected static final int NOTIF_ID = 100;
-    private int timeCounter = 0;
+    private int timeCounter;
     private static Service mCurrentService;
     private static Timer timer;
     private TimerTask timerTask;
+    public int oldTime;
     public ActiveService() {
         super();
     }
@@ -35,8 +38,13 @@ public class ActiveService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
+//        timeCounter = 0;
 
-        timeCounter = 0;
+        SharedPreferences prefs= getSharedPreferences("com.example.qoscheckapp.ActiveServiceRunning", MODE_PRIVATE);
+
+        if(prefs.getInt("timeCounter",0)!=0){
+            timeCounter = prefs.getInt("counter",0);
+        }
 
         if(intent == null){
             HelperServiceClass.launchService(this);
@@ -66,6 +74,7 @@ public class ActiveService extends Service {
     }
 
     private void initializeTimerTask() {
+
         Log.i("SERVICE", "initialising TimerTask");
         timerTask = new TimerTask() {
             public void run() {
@@ -91,13 +100,30 @@ public class ActiveService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Log.i("SERVICE", "onDestroy called");
+        try {
+            SharedPreferences prefs= getSharedPreferences("uk.ac.shef.oak.ServiceRunning", MODE_PRIVATE);
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putInt("timeCounter", timeCounter);
+            editor.apply();
+
+        } catch (NullPointerException e) {
+            Log.e("SERVER", "Error " +e.getMessage());
+
+        }
+
         Intent broadcastIntent = new Intent("com.example.qoscheckapp");
         sendBroadcast(broadcastIntent);
         //stop the timer
         if(timer != null){
             timer.cancel();
             timer = null;
+        }
+        try {
+
+            //Long.i("MoveMore", "Saving readings to preferences");
+        } catch (NullPointerException e) {
+            Log.e("SERVER", "error saving: are you testing?" +e.getMessage());
+
         }
     }
 
